@@ -18,3 +18,4 @@ conf-*
 sim_result*
 *_test
 backtesting_*
+*.pyc

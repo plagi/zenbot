@@ -11,11 +11,11 @@ module.exports = function container (get, set, clear) {
       this.option('min_periods', 'min. number of history periods', Number, 52)
       this.option('ema_short_period', 'number of periods for the shorter EMA', Number, 12)
       this.option('ema_long_period', 'number of periods for the longer EMA', Number, 26)
-      this.option('signal_period', 'number of periods for the signal EMA', Number, 9)
+      this.option('signal_period', 'number of periods for the signal EMA', Number, 3)
       this.option('up_trend_threshold', 'threshold to trigger a buy signal', Number, 0)
       this.option('down_trend_threshold', 'threshold to trigger a sold signal', Number, 0)
       this.option('overbought_rsi_periods', 'number of periods for overbought RSI', Number, 25)
-      this.option('overbought_rsi', 'sold when RSI exceeds this value', Number, 70)
+      this.option('overbought_rsi', 'sold when RSI exceeds this value', Number, 62)
     },
 
     calculate: function (s) {
@@ -39,27 +39,58 @@ module.exports = function container (get, set, clear) {
           s.period.macd_histogram = s.period.macd - s.period.signal
         }
       }
-    },
+      
+      // save 
+      if (typeof s.period.macd_max === 'undefined') {
+        s.period.macd_max = s.period.macd_histogram
+      }
+      if (typeof s.period.macd_min === 'undefined') {
+        s.period.macd_min = s.period.macd_histogram
+      }
+      
+      // when our current price is higher than what we recorded, overwrite
+      if (s.period.macd_histogram > s.period.macd_max) {
+        s.period.macd_max = s.period.macd_histogram
+      }
+
+      // when our current price is lower than what we recorded, overwrite
+      if (s.period.macd_histogram  < s.period.macd_min ) {
+        s.period.macd_min = s.period.macd_histogram
+      }
+
+},
 
     onPeriod: function (s, cb) {
       if (!s.in_preroll && typeof s.period.overbought_rsi === 'number') {
         if (s.overbought) {
           s.overbought = false
           s.trend = 'overbought'
-          s.signal = 'sold'
+          s.signal = 'sell'
           return cb()
         }
       }
 
       if (typeof s.period.macd_histogram === 'number' && typeof s.lookback[0].macd_histogram === 'number') {
         if ((s.period.macd_histogram - s.options.up_trend_threshold) > 0 && (s.lookback[0].macd_histogram - s.options.up_trend_threshold) <= 0) {
-          s.signal = 'buy';
+          s.trend = 'down';
+        s.signal = 'sell'
         } else if ((s.period.macd_histogram + s.options.down_trend_threshold) < 0 && (s.lookback[0].macd_histogram + s.options.down_trend_threshold) >= 0) {
-          s.signal = 'sell';
+          s.trend = 'up';
+          s.signal = 'buy'
         } else {
           s.signal = null;  // hold
         }
       }
+      
+      if ( (typeof s.period.macd_max === 'number' && typeof s.lookback[0].macd_max === 'number') && 
+      (typeof s.period.macd_min === 'number' && typeof s.lookback[0].macd_min === 'number') ){
+        if((s.period.macd_max > 0 ) && (s.lookback[0].macd_max > 0) && (s.period.macd_max < s.lookback[0].macd_max) && (s.trend == 'up')){
+          s.trend = null
+        } else if ((s.period.macd_min < 0 ) && (s.lookback[0].macd_min < 0) && (s.period.macd_min > s.lookback[0].macd_min) && (s.trend == 'down')){
+          s.trend = null
+        }
+      }
+      
       cb()
     },
 
@@ -75,6 +106,8 @@ module.exports = function container (get, set, clear) {
         }
         cols.push(z(8, n(s.period.macd_histogram).format('+00.0000'), ' ')[color])
         cols.push(z(8, n(s.period.overbought_rsi).format('00'), ' ').cyan)
+        cols.push(z(8, n(s.period.macd_min).format('+00.0000'), ' ').grey)
+        cols.push(z(8, n(s.period.macd_max).format('+00.0000'), ' ').grey)
       }
       else {
         cols.push('         ')

@@ -64,7 +64,7 @@ module.exports = function container (get, set, clear) {
           console.error('cannot trade ' + so.selector + ': exchange not implemented')
           process.exit(1)
         }
-        var engine = get('lib.engine')(s)
+        var engine = get('lib.engine')(s)        
 
         var order_types = ['maker', 'taker']
         if (!so.order_type in order_types || !so.order_type) {

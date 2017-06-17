@@ -129,6 +129,7 @@ module.exports = function container (get, set, clear) {
       }
       cols.push(z(8, n(s.period.high).format('0.0000'), ' ')[color])
       cols.push(z(8, n(s.trust_distrust_start).format('0.0000'), ' ').grey)
+//      cols.push(z(8, n(1-s.trust_distrust_start/s.period.high).format('0.0000'), ' ').grey)
       return cols
     }
   }
