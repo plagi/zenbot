@@ -81,6 +81,7 @@ module.exports = function container (get, set, clear) {
             side: trade.side
           }
         })
+        trades.reverse()
         cb(null, trades)
       })
     },
@@ -135,6 +136,7 @@ module.exports = function container (get, set, clear) {
       }
       if (opts.order_type === 'taker') {
         delete opts.price
+        delete opts.post_only
         opts.type = 'market'
       }
       delete opts.order_type
@@ -161,6 +163,7 @@ module.exports = function container (get, set, clear) {
       }
       if (opts.order_type === 'taker') {
         delete opts.price
+        delete opts.post_only
         opts.type = 'market'
       }
       delete opts.order_type
