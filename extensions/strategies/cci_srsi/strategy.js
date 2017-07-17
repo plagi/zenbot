@@ -9,7 +9,7 @@ module.exports = function container (get, set, clear) {
     getOptions: function () {
       this.option('period', 'period length', String, '20m')
       this.option('min_periods', 'min. number of history periods', Number, 50)
-      //this.option('ema_acc', 'sideways threshold (0.2-0.4)', Number, 0.3)
+      this.option('ema_acc', 'sideways threshold (0.2-0.4)', Number, 0.3)
       this.option('cci_periods', 'number of RSI periods', Number, 12)
       this.option('rsi_periods', 'number of RSI periods', Number, 14)
       this.option('srsi_periods', 'number of RSI periods', Number, 9)

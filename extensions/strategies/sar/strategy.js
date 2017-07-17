@@ -50,9 +50,9 @@ module.exports = function container (get, set, clear) {
         if (s.trend === 'down') {
           if (s.period.high >= s.sar && s.period.close > s.lookback[0].close) {
             s.trend = 'up'
-            // if(Math.abs(s.last_trade_worth > 0.02) || !(typeof s.last_trade_worth === 'number')) {
-            s.signal = 'buy'
-            // }
+            if(Math.abs(s.last_trade_worth > 0.15) || !(typeof s.last_trade_worth === 'number')) {
+              s.signal = 'buy'
+            }
             s.sar_ep = s.period.low
             s.sar_af = s.options.sar_af
             s.sar = Math.min(s.lookback[0].low, s.period.low, s.sar + (s.sar_af * (s.sar_ep - s.sar)))
@@ -67,7 +67,7 @@ module.exports = function container (get, set, clear) {
         else if (s.trend === 'up') {
           if (s.period.low <= s.sar && s.period.close < s.lookback[0].close) {
             s.trend = 'down'
-            if(Math.abs(s.last_trade_worth > 0.02) || !(typeof s.last_trade_worth === 'number')) {
+            if(Math.abs(s.last_trade_worth > 0.15) || !(typeof s.last_trade_worth === 'number')) {
               s.signal = 'sell'
             }
             s.sar_ep = s.period.high
