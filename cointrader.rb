@@ -17,8 +17,8 @@ Daemons.run_proc('cointrader_runner.rb') do
   @old_coin_dips = nil
   @new_coin = nil
   @action = 'buy'
-
-  @bad_coins = ['REP-BTC', 'ZEC-BTC', 'BCN-BTC', 'CLAM-BTC']
+  
+  @bad_coins = ['REP-BTC', 'ZEC-BTC', 'BCN-BTC', 'CLAM-BTC', 'LSK-BTC', 'LBC-BTC', 'ARDR-BTC', 'DOGE-BTC', 'FCT-BTC', 'STEEM-BTC', 'GAME-BTC']
 
   def get_coin_data
     response = HTTParty.get(API_URL)
