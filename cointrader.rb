@@ -36,18 +36,20 @@ Daemons.run_proc('cointrader_runner.rb') do
     LOGGER.info ">> Buying #{coin}"
     start = Time.now
     price = 0
-    Timeout.timeout(10*60) do
-      # command = Thread.new do
-        system "zenbot buy --order_adjust_time 20000  poloniex.#{coin} --pct 10"
-        # Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
-          # LOGGER.info "stdout is:" + stdout.read
-          # price = stdout.read.match(/at (\d*\.?\d+) BTC/i).try(:captures).try(:last)
-          # LOGGER.info price
-          # LOGGER.info "stderr is:" + stderr.read
-        # end
+    begin
+      Timeout.timeout(10*60) do
+        # command = Thread.new do
+          system "zenbot buy --order_adjust_time 20000  poloniex.#{coin} --pct 10"
+          # Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
+            # LOGGER.info "stdout is:" + stdout.read
+            # price = stdout.read.match(/at (\d*\.?\d+) BTC/i).try(:captures).try(:last)
+            # LOGGER.info price
+            # LOGGER.info "stderr is:" + stderr.read
+          # end
+        end
+        # command.join
+        LOGGER.info "#{coin} bought"
       end
-      # command.join
-      LOGGER.info "#{coin} bought"
     rescue Timeout::Error
       LOGGER.info ">> Timeout buying #{coin}"
     end
@@ -60,18 +62,20 @@ Daemons.run_proc('cointrader_runner.rb') do
     LOGGER.info ">> Selling #{coin}"
     start = Time.now
     price = 0
-    Timeout.timeout(10*60) do
-    # command = Thread.new do
-      system "zenbot sell --order_adjust_time 20000  poloniex.#{coin}"
-      # Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
-        # LOGGER.info "stdout is:" + stdout.read
-        # price = stdout.read.match(/at (\d*\.?\d+) BTC/i).try(:captures).try(:last)
-        # LOGGER.info price
-        # LOGGER.info "stderr is:" + stderr.read
-      # end
-    # end
-    # command.join
-    LOGGER.info "#{coin} sold"
+    begin
+      Timeout.timeout(10*60) do
+        # command = Thread.new do
+          system "zenbot sell --order_adjust_time 20000  poloniex.#{coin}"
+          # Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
+            # LOGGER.info "stdout is:" + stdout.read
+            # price = stdout.read.match(/at (\d*\.?\d+) BTC/i).try(:captures).try(:last)
+            # LOGGER.info price
+            # LOGGER.info "stderr is:" + stderr.read
+          # end
+        # end
+        # command.join
+        LOGGER.info "#{coin} sold"
+      end
     rescue Timeout::Error
       LOGGER.info ">> Timeout selling #{coin}"
     end
