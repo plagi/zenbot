@@ -46,7 +46,7 @@ Daemons.run_proc('cointrader_runner.rb') do
             # LOGGER.info price
             # LOGGER.info "stderr is:" + stderr.read
           # end
-        end
+        # end
         # command.join
         LOGGER.info "#{coin} bought"
       end
