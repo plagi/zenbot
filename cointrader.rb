@@ -3,70 +3,71 @@ require 'sqlite3'
 require 'httparty'
 require 'open3'
 require 'daemons'
+require 'logger'
 
-API_URL = 'https://poloniex.com/public?command=returnTicker&period=60'
-TIMEOUT = 50
-MIN_VOLUME = 100
-LOGGER = Logger.new('results.log')
+Daemons.run_proc('cointrader_runner.rb') do
+  API_URL = 'https://poloniex.com/public?command=returnTicker&period=60'
+  TIMEOUT = 50
+  MIN_VOLUME = 100
 
-@old_coin = nil
-@old_coin_dips = nil
-@new_coin = nil
-@action = 'buy'
+  @old_coin = nil
+  @old_coin_dips = nil
+  @new_coin = nil
+  @action = 'buy'
 
-@bad_coins = ['REP-BTC', 'ZEC-BTC', 'BCN-BTC', 'CLAM-BTC']
+  @bad_coins = ['REP-BTC', 'ZEC-BTC', 'BCN-BTC', 'CLAM-BTC']
 
-def get_coin_data
-  response = HTTParty.get(API_URL)
-  coindata = response.parsed_response
-end
-
-def rename_coin(coin, pair = 'BTC')
-  if coin.include?('BTC_')
-    coin_name = coin.split("_").last
-    pair_name = "#{coin_name}-#{pair}"
+  def get_coin_data
+    response = HTTParty.get(API_URL)
+    coindata = response.parsed_response
   end
-end
 
-def buy(coin)
-  LOGGER.info ">> Buying #{coin}"
-  start = Time.now
-  price = 0
-  command = Thread.new do
-    system "zenbot buy --order_adjust_time 20000  poloniex.#{coin} --pct 10"
-    # Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
-      # LOGGER.info "stdout is:" + stdout.read
-      # price = stdout.read.match(/at (\d*\.?\d+) BTC/i).try(:captures).try(:last)
-      # LOGGER.info price
-      # LOGGER.info "stderr is:" + stderr.read
-    # end
+  def rename_coin(coin, pair = 'BTC')
+    if coin.include?('BTC_')
+      coin_name = coin.split("_").last
+      pair_name = "#{coin_name}-#{pair}"
+    end
   end
-  command.join
-  LOGGER.info "#{coin} bought"
-  finish = Time.now
-  diff = finish - start
-end
 
-def sell(coin)
-  LOGGER.info ">> Selling #{coin}"
-  start = Time.now
-  price = 0
-  command = Thread.new do
-    system "zenbot sell --order_adjust_time 20000  poloniex.#{coin}"
-    # Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
-      # LOGGER.info "stdout is:" + stdout.read
-      # price = stdout.read.match(/at (\d*\.?\d+) BTC/i).try(:captures).try(:last)
-      # LOGGER.info price
-      # LOGGER.info "stderr is:" + stderr.read
-    # end
+  def buy(coin)
+    LOGGER.info ">> Buying #{coin}"
+    start = Time.now
+    price = 0
+    command = Thread.new do
+      system "zenbot buy --order_adjust_time 20000  poloniex.#{coin} --pct 10"
+      # Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
+        # LOGGER.info "stdout is:" + stdout.read
+        # price = stdout.read.match(/at (\d*\.?\d+) BTC/i).try(:captures).try(:last)
+        # LOGGER.info price
+        # LOGGER.info "stderr is:" + stderr.read
+      # end
+    end
+    command.join
+    LOGGER.info "#{coin} bought"
+    finish = Time.now
+    diff = finish - start
   end
-  command.join
-  LOGGER.info "#{coin} sold"
-  finish = Time.now
-  diff = finish - start
-end
 
-Daemons.run_proc('cointrader.rb') do
+  def sell(coin)
+    LOGGER.info ">> Selling #{coin}"
+    start = Time.now
+    price = 0
+    command = Thread.new do
+      system "zenbot sell --order_adjust_time 20000  poloniex.#{coin}"
+      # Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
+        # LOGGER.info "stdout is:" + stdout.read
+        # price = stdout.read.match(/at (\d*\.?\d+) BTC/i).try(:captures).try(:last)
+        # LOGGER.info price
+        # LOGGER.info "stderr is:" + stderr.read
+      # end
+    end
+    command.join
+    LOGGER.info "#{coin} sold"
+    finish = Time.now
+    diff = finish - start
+  end
+  LOGGER = Logger.new('results.log')
+  
   loop do
     begin
   
