@@ -32,39 +32,39 @@ Daemons.run_proc('cointrader_runner.rb') do
   end
 
   def buy(coin)
-    puts ">> Buying #{coin}"
+    LOGGER.info ">> Buying #{coin}"
     start = Time.now
     price = 0
     command = Thread.new do
       system "zenbot buy --order_adjust_time 20000  poloniex.#{coin} --pct 10"
       # Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
-        # puts "stdout is:" + stdout.read
+        # LOGGER.info "stdout is:" + stdout.read
         # price = stdout.read.match(/at (\d*\.?\d+) BTC/i).try(:captures).try(:last)
-        # puts price
-        # puts "stderr is:" + stderr.read
+        # LOGGER.info price
+        # LOGGER.info "stderr is:" + stderr.read
       # end
     end
     command.join
-    puts "#{coin} bought"
+    LOGGER.info "#{coin} bought"
     finish = Time.now
     diff = finish - start
   end
 
   def sell(coin)
-    puts ">> Selling #{coin}"
+    LOGGER.info ">> Selling #{coin}"
     start = Time.now
     price = 0
     command = Thread.new do
       system "zenbot sell --order_adjust_time 20000  poloniex.#{coin}"
       # Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
-        # puts "stdout is:" + stdout.read
+        # LOGGER.info "stdout is:" + stdout.read
         # price = stdout.read.match(/at (\d*\.?\d+) BTC/i).try(:captures).try(:last)
-        # puts price
-        # puts "stderr is:" + stderr.read
+        # LOGGER.info price
+        # LOGGER.info "stderr is:" + stderr.read
       # end
     end
     command.join
-    puts "#{coin} sold"
+    LOGGER.info "#{coin} sold"
     finish = Time.now
     diff = finish - start
   end
@@ -77,40 +77,40 @@ Daemons.run_proc('cointrader_runner.rb') do
   
       db.execute "CREATE TABLE gains (key, pct, dips)"
   
-      puts "Loading first data"
+      LOGGER.info "Loading first data"
       first_data = get_coin_data
       first_data.each do |coin, value|
-        # puts coin, value
+        # LOGGER.info coin, value
         pair = rename_coin(coin)
         if pair #&& !@bad_coins.any?{|bad_pair| pair == bad_pair }
           pct = value['last']
           volume = value['baseVolume'].to_f
           if (volume > MIN_VOLUME)
-            # puts "#{pair}: #{pct}"
+            # LOGGER.info "#{pair}: #{pct}"
             db.execute "INSERT INTO gains VALUES ('#{pair}', #{pct}, NULL);"
           end
         end
       end
   
-      puts "Sleeping #{TIMEOUT}"
+      LOGGER.info "Sleeping #{TIMEOUT}"
       sleep(TIMEOUT)
       
-      puts "Loading second data"
+      LOGGER.info "Loading second data"
       data = get_coin_data
       data.each do |coin, value|
-        # puts coin, value
+        # LOGGER.info coin, value
         pair = rename_coin(coin)
         if pair #&& !@bad_coins.any?{|bad_pair| pair == bad_pair }
           pct = value['last']
           volume = value['baseVolume'].to_f
           if (volume > MIN_VOLUME) 
             begin
-              puts "#{pair}: #{pct} : #{[first_data[coin]['last'], (value['last'].to_f - first_data[coin]['last'].to_f), ((value['last'].to_f - first_data[coin]['last'].to_f)/first_data[coin]['last'].to_f)*100.0 ] * "\t"}"
+              LOGGER.info "#{pair}: #{pct} : #{[first_data[coin]['last'], (value['last'].to_f - first_data[coin]['last'].to_f), ((value['last'].to_f - first_data[coin]['last'].to_f)/first_data[coin]['last'].to_f)*100.0 ] * "\t"}"
             
               db.execute "UPDATE gains SET dips = #{pct} WHERE key = '#{pair}';"
             rescue SQLite3::Exception => e 
-              puts "Exception occurred"
-              puts e
+              LOGGER.info "Exception occurred"
+              LOGGER.info e
             end
           end
         end
@@ -126,23 +126,23 @@ Daemons.run_proc('cointrader_runner.rb') do
       if !!@old_coin && @old_coin_dips > 0.00000001
         new_dips = db.execute("SELECT key, dips FROM gains WHERE key='#{@old_coin}';").first['dips'].to_f
         if (new_dips - @old_coin_dips > 0.00000001)
-          puts "Old coin still good: #{@old_coin} dips #{new_dips} - #{@old_coin_dips} = #{new_dips - @old_coin_dips}"
+          LOGGER.info "Old coin still good: #{@old_coin} dips #{new_dips} - #{@old_coin_dips} = #{new_dips - @old_coin_dips}"
           @new_coin = @old_coin
           @old_coin_dips = new_dips
         else
-          puts "New coin is better: #{@old_coin} dips #{new_dips} - #{@old_coin_dips} = #{new_dips - @old_coin_dips}"
+          LOGGER.info "New coin is better: #{@old_coin} dips #{new_dips} - #{@old_coin_dips} = #{new_dips - @old_coin_dips}"
         end
       end
     
-      puts "Percent: #{pct.to_f * 100}"
-      puts "Action: #{@action}"
+      LOGGER.info "Percent: #{pct.to_f * 100}"
+      LOGGER.info "Action: #{@action}"
       time = 0
     
       if (@old_coin != @new_coin)
           
-        puts "Prev_coin != new_coin, #{@old_coin != @new_coin}"
+        LOGGER.info "Prev_coin != new_coin, #{@old_coin != @new_coin}"
         if !!@old_coin
-          puts "Prev_coin present"
+          LOGGER.info "Prev_coin present"
         
           # sell prev coin
           if @action == 'sell'
@@ -150,22 +150,22 @@ Daemons.run_proc('cointrader_runner.rb') do
             @old_coin_dips = 0
             if time > 4*60
               @bad_coins.push(@old_coin) 
-              puts "Adding BAD coin: #{@old_coin}"
+              LOGGER.info "Adding BAD coin: #{@old_coin}"
             end
           end
         else
-          puts "Initial run"
+          LOGGER.info "Initial run"
         end
       
-        puts "new coin: #{@new_coin}"
+        LOGGER.info "new coin: #{@new_coin}"
         # buy new coin
         if @action == 'buy'
           time = buy(@new_coin) 
           @old_coin_dips = new_dips
-          puts "old dips: #{@old_coin_dips}"
+          LOGGER.info "old dips: #{@old_coin_dips}"
           if time > 4*60
             @bad_coins.push(@new_coin) 
-            puts "Adding BAD coin: #{@new_coin}"
+            LOGGER.info "Adding BAD coin: #{@new_coin}"
           end
         end
       
@@ -176,15 +176,15 @@ Daemons.run_proc('cointrader_runner.rb') do
         end
         
       else
-        puts "Still good: #{@new_coin}, #{@old_coin}"
+        LOGGER.info "Still good: #{@new_coin}, #{@old_coin}"
       end
     
-      puts "BAD COINS: #{@bad_coins * ", "}"
+      LOGGER.info "BAD COINS: #{@bad_coins * ", "}"
     
     rescue SQLite3::Exception => e 
     
-        puts "Exception occurred"
-        puts e
+        LOGGER.info "Exception occurred"
+        LOGGER.info e
     
     ensure
         db.close if db
