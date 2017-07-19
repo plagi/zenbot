@@ -190,7 +190,7 @@ Daemons.run_proc('cointrader_runner.rb') do
         end
         
       else
-        ACTION_LOGGER.info [@old_coin, @new_coin, 'hodl', @pct, @new_dips, @old_coin_dips].to_csv
+        ACTION_LOGGER.info [@old_coin, @new_coin, 'hodl', '%.7f' %  pct.to_f , '%.7f' %  new_dips.to_f, '%.7f' %  @old_coin_dips.to_f].to_csv
         LOGGER.info "Still good: #{@new_coin}, #{@old_coin}"
       end
     
