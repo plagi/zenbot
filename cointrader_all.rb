@@ -33,7 +33,7 @@ Daemons.run_proc('cointrader_runner.rb') do
     cmd = "zenbot trade --strategy rsi --period 5m poloniex.#{coin} --pct 10"
     command = Thread.new do
       Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
-        while line = stdout.gets
+        while line = stderr.gets
           LOGGER.info line
         end
       end
@@ -45,7 +45,7 @@ Daemons.run_proc('cointrader_runner.rb') do
     cmd = "zenbot sell --order_adjust_time 30000  poloniex.#{coin}"    
     command = Thread.new do
       Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
-        while line = stdout.gets
+        while line = stderr.gets
           LOGGER.info line
         end
       end
