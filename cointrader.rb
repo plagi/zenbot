@@ -11,14 +11,16 @@ WORKING_DIRECTORY = Dir.pwd
 Daemons.run_proc('cointrader_runner.rb') do
   API_URL = 'https://poloniex.com/public?command=returnTicker&period=60'
   TIMEOUT = 50
+  ACTION_TIMEOUT = {"buy" => 10, "sell" =>  150}
   MIN_VOLUME = 100
   LOGGER = Logger.new(WORKING_DIRECTORY + '/results.log')
+  ACTION_LOGGER = Logger.new(WORKING_DIRECTORY + '/actions.csv')
   @old_coin = nil
   @old_coin_dips = nil
   @new_coin = nil
   @action = 'buy'
   
-  @bad_coins = ['REP-BTC', 'ZEC-BTC', 'BCN-BTC', 'CLAM-BTC', 'LSK-BTC', 'LBC-BTC', 'ARDR-BTC', 'DOGE-BTC', 'FCT-BTC', 'STEEM-BTC', 'GAME-BTC']
+  @bad_coins = []#['REP-BTC', 'ZEC-BTC', 'BCN-BTC', 'CLAM-BTC', 'LSK-BTC', 'LBC-BTC', 'ARDR-BTC', 'DOGE-BTC', 'FCT-BTC', 'STEEM-BTC', 'GAME-BTC', 'GNT-BTC']
 
   def get_coin_data
     response = HTTParty.get(API_URL)
@@ -52,6 +54,8 @@ Daemons.run_proc('cointrader_runner.rb') do
       end
     rescue Timeout::Error
       LOGGER.info ">> Timeout buying #{coin}"
+      @bad_coins.push(coin) 
+      LOGGER.info "Adding BAD coin: #{coin}"
     end
     
     finish = Time.now
@@ -78,6 +82,8 @@ Daemons.run_proc('cointrader_runner.rb') do
       end
     rescue Timeout::Error
       LOGGER.info ">> Timeout selling #{coin}"
+      @bad_coins.push(coin) 
+      LOGGER.info "Adding BAD coin: #{coin}"
     end
     finish = Time.now
     diff = finish - start
@@ -106,8 +112,8 @@ Daemons.run_proc('cointrader_runner.rb') do
         end
       end
   
-      LOGGER.info "Sleeping #{TIMEOUT}"
-      sleep(TIMEOUT)
+      LOGGER.info "Sleeping #{ACTION_TIMEOUT[@action]}"
+      sleep(ACTION_TIMEOUT[@action])
       
       LOGGER.info "Loading second data"
       data = get_coin_data
@@ -119,7 +125,7 @@ Daemons.run_proc('cointrader_runner.rb') do
           volume = value['baseVolume'].to_f
           if (volume > MIN_VOLUME) 
             begin
-              LOGGER.info "#{pair}: #{pct} : #{[first_data[coin]['last'], (value['last'].to_f - first_data[coin]['last'].to_f), ((value['last'].to_f - first_data[coin]['last'].to_f)/first_data[coin]['last'].to_f)*100.0 ] * "\t"}"
+              LOGGER.info "#{pair}: #{pct} : #{[first_data[coin]['last'] , (value['last'].to_f - first_data[coin]['last'].to_f), ((value['last'].to_f - first_data[coin]['last'].to_f)/first_data[coin]['last'].to_f)*100.0 ] * "\t"}"
             
               db.execute "UPDATE gains SET dips = #{pct} WHERE key = '#{pair}';"
             rescue SQLite3::Exception => e 
@@ -160,12 +166,9 @@ Daemons.run_proc('cointrader_runner.rb') do
         
           # sell prev coin
           if @action == 'sell'
+            ACTION_LOGGER.info [@old_coin, @new_coin, @action, '%.7f' %  pct.to_f, '%.7f' %  new_dips.to_f, '%.7f' %  @old_coin_dips.to_f].to_csv
             time = sell(@old_coin)
             @old_coin_dips = 0
-            if time > 4*60
-              @bad_coins.push(@old_coin) 
-              LOGGER.info "Adding BAD coin: #{@old_coin}"
-            end
           end
         else
           LOGGER.info "Initial run"
@@ -173,14 +176,11 @@ Daemons.run_proc('cointrader_runner.rb') do
       
         LOGGER.info "new coin: #{@new_coin}"
         # buy new coin
-        if @action == 'buy'
+        if @action == 'buy' && pct > 0.001
+          ACTION_LOGGER.info [@old_coin, @new_coin, @action, '%.7f' %  pct.to_f , '%.7f' %  new_dips.to_f, '%.7f' %  @old_coin_dips.to_f].to_csv
           time = buy(@new_coin) 
           @old_coin_dips = new_dips
           LOGGER.info "old dips: #{@old_coin_dips}"
-          if time > 4*60
-            @bad_coins.push(@new_coin) 
-            LOGGER.info "Adding BAD coin: #{@new_coin}"
-          end
         end
       
         if @action == 'buy'
@@ -190,6 +190,7 @@ Daemons.run_proc('cointrader_runner.rb') do
         end
         
       else
+        ACTION_LOGGER.info [@old_coin, @new_coin, 'hodl', @pct, @new_dips, @old_coin_dips].to_csv
         LOGGER.info "Still good: #{@new_coin}, #{@old_coin}"
       end
     
