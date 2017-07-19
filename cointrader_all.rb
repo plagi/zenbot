@@ -12,7 +12,7 @@ Daemons.run_proc('cointrader_runner.rb') do
   API_URL = 'https://poloniex.com/public?command=returnTicker&period=60'
   MIN_VOLUME = 100
   LOGGER = Logger.new(WORKING_DIRECTORY + '/results.log')
-  TIMEOUTE = 200
+  TIMEOUT = 200
   
   @bad_coins = []
 
@@ -61,7 +61,7 @@ Daemons.run_proc('cointrader_runner.rb') do
       pct = value['last']
       volume = value['baseVolume'].to_f
       if (volume > MIN_VOLUME)
-        buy(coin)
+        buy(pair)
         sleep(TIMEOUT)
       end
     end
