@@ -29,30 +29,32 @@ Daemons.run_proc('cointrader_runner.rb') do
   end
 
   def buy(coin)
-    LOGGER.info ">> Started trading #{coin}"
+    puts ">> Started trading #{coin}"
     cmd = "zenbot trade --strategy rsi --period 5m poloniex.#{coin} --pct 10"
     command = Thread.new do
-      Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
-        while line = stderr.gets
-          LOGGER.info line
-        end
+      # system cmd
+      Open3.popen2e(cmd) do |stdin, stdout_err, wait_thr|
+        while line = stdout_err.gets
+           LOGGER.info line
+         end
       end
     end
   end
 
   def sell(coin)
-    LOGGER.info ">> Selling #{coin}"
+    puts  ">> Selling #{coin}"
     cmd = "zenbot sell --order_adjust_time 30000  poloniex.#{coin}"    
     command = Thread.new do
-      Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
-        while line = stderr.gets
-          LOGGER.info line
-        end
+      # system cmd
+      Open3.popen2e(cmd) do |stdin, stdout_err, wait_thr|
+        while line = stdout_err.gets
+           LOGGER.info line
+         end
       end
     end
   end
   
-  LOGGER.info "Loading coins data"
+  puts "Loading coins data"
   first_data = get_coin_data
   first_data.each do |coin, value|
 
