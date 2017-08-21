@@ -31,7 +31,6 @@
     "node.bittrex.api": "^0.2.5",
     "number-abbreviate": "^2.0.0",
     "numbro": "git+https://github.com/carlos8f/numbro.git",
-
     "poloniex.js": "0.0.7",
     "progress": "^2.0.0",
     "pusher-js": "^4.1.0",
@@ -44,7 +43,6 @@
     "telebot": "^1.2.2",
     "timebucket": "^0.4.0",
     "talib": "^1.0.3",
-
     "zero-fill": "^2.2.3"
   },
   "devDependencies": {
