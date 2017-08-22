@@ -172,7 +172,7 @@ def run():
         global sellstr
         sleep(5)
         # Below is the coin list, please follow its format... I choose coins with volume above 1000 daily.
-        word_list = ["BTC_ETH", "BTC_XMR", "BTC_XRP", "BTC_BCH", "BTC_LTC"]
+        word_list = ["BTC_ETH", "BTC_XMR", "BTC_XRP", "BTC_BCH", "BTC_LTC", "BTC_DOGE", "BTC_NXT", "BTC_REP", "BTC_BTS", "USDT_BTC", "BTC_XEM", "BTC_ZRX"]
         # Let's just use 5 for now... keeps things going quicker.
         for word in word_list:
             # initiate the data calculations
