@@ -1,4 +1,4 @@
-FROM node:boron
+FROM node:latest
 
 RUN mkdir -p /app
 WORKDIR /app
@@ -7,5 +7,9 @@ COPY package.json /app/
 RUN npm install -g node-gyp && npm install --unsafe-perm
 
 COPY . /app
+RUN ln -s /app/zenbot.sh /usr/local/bin/zenbot
 
-CMD [ "./zenbot.sh", "trade", "--paper" ]
+ENV NODE_ENV production
+
+ENTRYPOINT ["/usr/local/bin/node", "zenbot.js"]
+CMD [ "trade", "--paper" ]

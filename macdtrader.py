@@ -174,6 +174,7 @@ class Chart(object):
         df['shadowsize'] = df['high'] - df['low']
         # add percent change
         df['percentChange'] = df['close'].pct_change()
+        # print(df)
         return df
 def run():
     while True:
@@ -185,10 +186,12 @@ def run():
         word_list = ["BTC_XRP", "BTC_XMR", "BTC_LTC"]
         for word in word_list:
             # initiate the data calculations
+            print(word)
             df = Chart(api, word).dataFrame()
             df.dropna(inplace=True)
             data = (df.tail(2)[['macd']])
             data1 = (df.tail(2)[['emasig']])
+            print('macd and emasig')
             #Turn Data into a string
             txt=str(data)
             txt1=str(data1)

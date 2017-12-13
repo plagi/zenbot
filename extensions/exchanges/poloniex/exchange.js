@@ -62,12 +62,12 @@ module.exports = function container (get, set, clear) {
         args.end = opts.to
       }
       if (args.start && !args.end) {
-        // add 2 hours
-        args.end = args.start + 7200
+        // add 12 hours
+        args.end = args.start + 43200
       }
       else if (args.end && !args.start) {
-        // subtract 2 hours
-        args.start = args.end - 7200
+        // subtract 12 hours
+        args.start = args.end - 43200
       }
 
       client._public('returnTradeHistory', args, function (err, body) {
@@ -168,7 +168,7 @@ module.exports = function container (get, set, clear) {
         currencyPair: joinProduct(opts.product_id),
         rate: opts.price,
         amount: opts.size,
-//        postOnly: opts.post_only === false ? '0' : '1'
+        postOnly: opts.post_only === false ? '0' : '1'
       }
       client._private(type, params, function (err, result) {
         if (typeof result === 'string') {
@@ -179,7 +179,7 @@ module.exports = function container (get, set, clear) {
           status: 'open',
           price: opts.price,
           size: opts.size,
-//          post_only: !!opts.post_only,
+          post_only: !!opts.post_only,
           created_at: new Date().getTime(),
           filled_size: '0'
         }
@@ -226,6 +226,8 @@ module.exports = function container (get, set, clear) {
         }
         var active = false
         if (!body.forEach) {
+          console.error('\nreturnOpenOrders odd result in checking state of order, trying again')
+          //console.error(body)
           return retry('getOrder', args)
         }
         else {

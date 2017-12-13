@@ -1,10 +1,10 @@
 //
 // Warning - Some of the functions need testing
-// by someone in posession of a BTCe account
+// by someone in posession of a WEXNZ account
 // In particular this is the case for 
 // the buy, sell, cancelOrderand getOrderfunctions
 //
-var BTCE = require('btce')
+var WEXNZ = require('wexnz')
   , path = require('path')
   , colors = require('colors')
   , numbro = require('numbro')
@@ -16,23 +16,23 @@ module.exports = function container (get, set, clear) {
 
   function publicClient () {
     if (!public_client) {
-      public_client = new BTCE()
+      public_client = new WEXNZ()
     }
     return public_client
   }
 
   function authedClient () {
     if (!authed_client) {
-      if (!c.btce || !c.btce.key || c.btce.key === 'YOUR-API-KEY') {
-        throw new Error('please configure your BTCe credentials in conf.js')
+      if (!c.wexnz || !c.wexnz.key || c.wexnz.key === 'YOUR-API-KEY') {
+        throw new Error('please configure your WEX.NZ credentials in conf.js')
       }
-      authed_client = new BTCE(c.btce.key, c.btce.secret)
+      authed_client = new WEXNZ(c.wexnz.key, c.wexnz.secret)
     }
     return authed_client
   }
 
   function joinProduct (product_id) {
-    return product_id.split('-')[0] + '_' + product_id.split('-')[1]
+    return (product_id.split('-')[0] + '_' + product_id.split('-')[1]).toLowerCase()
   }
 
   function statusErr (err, body) {
@@ -41,7 +41,7 @@ module.exports = function container (get, set, clear) {
     } else if (!body.success) {
       if (body.error === 'invalid api key' || body.error === 'invalid sign') {
         console.log(err)
-        throw new Error('please correct your BTCe credentials in conf.js')
+        throw new Error('please correct your WEXNZ credentials in conf.js')
       } else if (err) {
         return new Error('\nError: ' + err)
       }
@@ -53,7 +53,7 @@ module.exports = function container (get, set, clear) {
 
   function retry (method, args, err) {
     if (method !== 'getTrades') {
-      console.error(('\nBTCe API is down! unable to call ' + method + ', retrying in 10s').red)
+      console.error(('\nWEXNZ API is down! unable to call ' + method + ', retrying in 10s').red)
       if (err) console.error(err)
       console.error(args.slice(0, -1))
     }
@@ -65,10 +65,11 @@ module.exports = function container (get, set, clear) {
   var orders = {}
 
   var exchange = {
-    name: 'btce',
-    historyScan: 'false',
+    name: 'wexnz',
+    historyScan: 'backward',
     makerFee: 0.2,
     takerFee: 0.2,
+    backfillRateLimit: 5000,
 
     getProducts: function () {
       return require('./products.json')
@@ -77,7 +78,7 @@ module.exports = function container (get, set, clear) {
     getTrades: function (opts, cb) {
       var func_args = [].slice.call(arguments)
       var client = publicClient()
-      var pair = joinProduct(opts.product_id).toLowerCase()
+      var pair = joinProduct(opts.product_id)
       var args = {}
       if (opts.from) {
         // move cursor into the future
@@ -87,7 +88,7 @@ module.exports = function container (get, set, clear) {
         // move cursor into the past
         args.after = opts.to
       }
-      client.trades({ pair: pair, count: 1000 }, function (err, body) {
+      client.trades({ pair: pair, count: 100000000 }, function (err, body) {
         if (err) return retry('getTrades', func_args, err)
         var trades = body.map(function (trade) {
           return {
@@ -153,9 +154,9 @@ module.exports = function container (get, set, clear) {
 
     trade: function (type, opts, cb) {
       var func_args = [].slice.call(arguments)
-      var client = authed_client()
+      var client = authedClient()
       var pair = joinProduct(opts.product_id)
-      /* BTCe has no order type?
+      /* WEXNZ has no order type?
       if (typeof opts.post_only === 'undefined') {
         opts.post_only = true
       }
