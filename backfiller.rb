@@ -11,7 +11,7 @@ WORKING_DIRECTORY = Dir.pwd
 # Daemons.run_proc('cointrader_runner.rb') do
   TIMEOUT = 4*60*60
   API_URL = 'https://poloniex.com/public?command=returnTicker&period=60'
-  MIN_VOLUME = 500.0
+  MIN_VOLUME = 900.0
   ACTION_LOGGER = Logger.new(WORKING_DIRECTORY + '/actions.csv')
 
   def get_coin_data
