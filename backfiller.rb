@@ -39,4 +39,5 @@ first_data.each do |coin, value|
   puts coin, value
   pair = rename_coin(coin)
   system "zenbot backfill  poloniex.#{coin} --days 3"
+  system "zenbot sim poloniex.#{coin} --days 3"  
 end
