@@ -41,7 +41,7 @@ WORKING_DIRECTORY = Dir.pwd
       pid = Process.spawn(cmd, pgroup: true)#, :out => wout, :err => werr)
 
       Timeout.timeout(timeout) do
-        Process.waitpid(pid)
+        # Process.waitpid(pid)
 
         # close write ends so we can read from them
         # wout.close
@@ -76,7 +76,7 @@ WORKING_DIRECTORY = Dir.pwd
       if calc
         result = %x[zenbot backfill  poloniex.#{pair} --days 2]
         puts result
-        result = %x[zenbot sim poloniex.#{pair} --days 1 --max_sell_loss_pct 25]
+        result = %x[zenbot sim poloniex.#{pair} --days 1 --max_sell_loss_pct=25]
         file = result.split("\n").last.split(" ").last
         results[pair] = {}
         buy_hold = false
@@ -101,10 +101,15 @@ WORKING_DIRECTORY = Dir.pwd
     puts "WINNER: #{winner = results.sort {|a,b| b.last["end_balance"].to_f <=> a.last["end_balance"].to_f}.first}"
     ACTION_LOGGER.debug results.to_s
     coin = winner.first
+    begin
+      Timeout::timeout(TIMEOUT) do
+        system "zenbot trade poloniex.#{coin}"
+      end
+    rescue Timeout::Error 
+      puts ">> Timeout trading #{coin}"   
+    ensure
+      sell(coin)
+    end
 
-    exec_with_timeout("zenbot trade poloniex.#{coin}", TIMEOUT)
-
-    puts ">> Timeout trading #{coin}"
-    sell(coin)
   end
 # end
