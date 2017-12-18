@@ -61,7 +61,7 @@ WORKING_DIRECTORY = Dir.pwd
       # rout.close
       # rerr.close
     end
-    stdout
+    # stdout
    end
   
   loop do
