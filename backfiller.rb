@@ -34,13 +34,15 @@ def rename_coin(coin, pair = 'BTC')
   end
 end
 
-system "rm simulations/*.html"
+system "rm ./simulations/*.html"
   
 first_data = get_coin_data
 first_data.each do |coin, value|
   puts coin, value
-  puts "value: #{value["baseVolume"]} > 500 #{value["baseVolume"].to_f > 500.0} "
+  puts "value: #{value["baseVolume"]} > 500 #{calc = value["baseVolume"].to_f > 500.0} "
   pair = rename_coin(coin)
-  system "zenbot backfill  poloniex.#{pair} --days 2"
-  system "zenbot sim poloniex.#{pair} --days 1"  
+  if calc
+    %x["zenbot backfill  poloniex.#{pair} --days 2"]
+    %x["zenbot sim poloniex.#{pair} --days 1"]
+  end
 end
