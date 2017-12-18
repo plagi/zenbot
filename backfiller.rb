@@ -76,7 +76,7 @@ WORKING_DIRECTORY = Dir.pwd
       if calc
         result = %x[zenbot backfill  poloniex.#{pair} --days 2]
         puts result
-        result = %x[zenbot sim poloniex.#{pair} --days 1]
+        result = %x[zenbot sim poloniex.#{pair} --days 1 --max_sell_loss_pct 25]
         file = result.split("\n").last.split(" ").last
         results[pair] = {}
         buy_hold = false
