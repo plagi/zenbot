@@ -102,8 +102,8 @@ WORKING_DIRECTORY = Dir.pwd
     ACTION_LOGGER.debug results.to_s
     coin = winner.first
     begin
-      Timeout::timeout(TIMEOUT) do
-        system "zenbot trade poloniex.#{coin}"
+      Timeout.timeout(TIMEOUT) do
+          system "zenbot trade poloniex.#{coin}"
       end
     rescue Timeout::Error 
       puts ">> Timeout trading #{coin}"   
