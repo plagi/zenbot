@@ -8,7 +8,7 @@ require "timeout"
 
 WORKING_DIRECTORY = Dir.pwd
 
-Daemons.run_proc('cointrader_runner.rb') do
+# Daemons.run_proc('cointrader_runner.rb') do
   TIMEOUT = 5*60*60
   API_URL = 'https://poloniex.com/public?command=returnTicker&period=60'
   MIN_VOLUME = 500.0
@@ -75,4 +75,4 @@ Daemons.run_proc('cointrader_runner.rb') do
       sell(coin)
     end
   end
-end
+# end
