@@ -36,7 +36,7 @@ WORKING_DIRECTORY = Dir.pwd
 
     results = {}
     first_data = get_coin_data
-    first_data.select {|coin| coin.include?('BTC_')}.each do |coin, value|
+    first_data.select {|coin| coin.include?('BTC_')}.take(3).each do |coin, value|
       puts coin, value
       puts "value: #{value["baseVolume"]} > 500 #{calc = value["baseVolume"].to_f > MIN_VOLUME} "
       pair = rename_coin(coin)
@@ -65,14 +65,16 @@ WORKING_DIRECTORY = Dir.pwd
     end
   
     Timeout.timeout(TIMEOUT) do
-      puts results
-      puts "WINNER: #{winner = results.sort {|a,b| b.last["end_balance"].to_f <=> a.last["end_balance"].to_f}.first}"
-      ACTION_LOGGER.debug results.to_s
-      coin = winner.first
-      system("zenbot trade poloniex.#{coin}")
-    rescue Timeout::Error
-      puts ">> Timeout trading #{coin}"
-      sell(coin)
+      begin
+        puts results
+        puts "WINNER: #{winner = results.sort {|a,b| b.last["end_balance"].to_f <=> a.last["end_balance"].to_f}.first}"
+        ACTION_LOGGER.debug results.to_s
+        coin = winner.first
+        system("zenbot trade poloniex.#{coin}")
+      rescue Timeout::Error
+        puts ">> Timeout trading #{coin}"
+        sell(coin)
+      end
     end
   end
 # end
