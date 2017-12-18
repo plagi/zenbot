@@ -40,5 +40,5 @@ first_data.each do |coin, value|
   puts "value: #{value["baseVolume"]} > 500 #{value["baseVolume"] > 500} "
   pair = rename_coin(coin)
   system "zenbot backfill  poloniex.#{pair} --days 2"
-  system "zenbot sim poloniex.#{pair} --days 2"  
+  system "zenbot sim poloniex.#{pair} --days 1"  
 end
