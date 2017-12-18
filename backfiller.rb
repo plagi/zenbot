@@ -27,7 +27,7 @@ system "rm ./simulations/*.html"
 results = {}
   
 first_data = get_coin_data
-first_data.each do |coin, value|
+first_data.filter{|coin| coin.include?('BTC_')}.each do |coin, value|
   puts coin, value
   puts "value: #{value["baseVolume"]} > 500 #{calc = value["baseVolume"].to_f > MIN_VOLUME} "
   pair = rename_coin(coin)
