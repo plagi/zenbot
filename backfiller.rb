@@ -34,6 +34,8 @@ def rename_coin(coin, pair = 'BTC')
   end
 end
 
+system "rm simulations/*.html"
+  
 first_data = get_coin_data
 first_data.each do |coin, value|
   puts coin, value
