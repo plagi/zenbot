@@ -46,7 +46,7 @@ first_data.each do |coin, value|
         if buy_hold == false
           results[pair]["buy_hold"] = line.split(" ")[2].to_f
           results[pair]["buy_hold%"] = line.scan(/\(([^)]+)\)/).flatten.first.to_f
-          results[pair]["vs_buy_hold%"] = (1 - results[pair]["end_balance"].to_f / results[pair]["buy_hold"].to_f)*100.0
+          results[pair]["vs_buy_hold%"] = (1 -  results[pair]["buy_hold"].to_f / results[pair]["end_balance"].to_f)*100.0
           buy_hold = true
         end
       end
