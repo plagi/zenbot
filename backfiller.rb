@@ -47,6 +47,7 @@ first_data.each do |coin, value|
           buy_hold = true
         end
       elsif line.include?("vs. buy hold")
+        puts line
         results[pair]["vs_buy_hold"] = line.split(":")
       end
     end
