@@ -35,6 +35,8 @@ def rename_coin(coin, pair = 'BTC')
 end
 
 system "rm ./simulations/*.html"
+
+results = {}
   
 first_data = get_coin_data
 first_data.each do |coin, value|
@@ -42,7 +44,20 @@ first_data.each do |coin, value|
   puts "value: #{value["baseVolume"]} > 500 #{calc = value["baseVolume"].to_f > 500.0} "
   pair = rename_coin(coin)
   if calc
-    %x["zenbot backfill  poloniex.#{pair} --days 2"]
-    %x["zenbot sim poloniex.#{pair} --days 1"]
+    result = %x[zenbot backfill  poloniex.#{pair} --days 2]
+    puts result
+    result = %x[zenbot sim poloniex.#{pair} --days 1]
+    file = result.split("\n").last.split(" ").last
+    File.open(file).each do |line|
+      if line.include?("end balance")
+        puts line
+      elsif line.include?("buy hold")
+        puts line
+      elsif line.include?("vs. buy hold")
+        puts line
+      end
+    end
+    results[pair] = {}
+    result
   end
 end
