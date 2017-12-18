@@ -40,15 +40,15 @@ first_data.each do |coin, value|
     buy_hold = false
     File.open(file).each do |line|
       if line.include?("end balance")
-        results[pair]["end_balance"] = line.scan(/\(([^)]+)\)/).flatten.first
+        results[pair]["end_balance"] = line.split(" ")[2]
+        results[pair]["end_balance%"] = line.scan(/\(([^)]+)\)/).flatten.first
       elsif line.include?("buy hold")
         if buy_hold == false
-          results[pair]["buy_hold"] = line.scan(/\(([^)]+)\)/).flatten.first
+          results[pair]["buy_hold"] = line.split(" ")[2]
+          results[pair]["buy_hold%"] = line.scan(/\(([^)]+)\)/).flatten.first
+          results[pair]["vs_buy_hold%"] = (1 - results[pair]["end_balance"].to_f / results[pair]["buy_hold"].to_f)
           buy_hold = true
         end
-      elsif line.include?("vs. buy hold")
-        puts line
-        results[pair]["vs_buy_hold"] = line.split(":")
       end
     end
     puts results[pair]
