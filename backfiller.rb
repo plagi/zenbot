@@ -48,16 +48,16 @@ first_data.each do |coin, value|
     puts result
     result = %x[zenbot sim poloniex.#{pair} --days 1]
     file = result.split("\n").last.split(" ").last
+    results[pair] = {}
     File.open(file).each do |line|
       if line.include?("end balance")
-        puts line
+        results[pair]["end_balance"] = line.scan(/\(([^)]+)\)/)
       elsif line.include?("buy hold")
-        puts line
+        results[pair]["buy_hold"] = line.scan(/\(([^)]+)\)/)
       elsif line.include?("vs. buy hold")
-        puts line
+        results[pair][vs_buy_hold] = line.split(" ").last
       end
     end
-    results[pair] = {}
-    result
+    puts results[pair]
   end
 end
