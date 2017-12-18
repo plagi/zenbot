@@ -9,7 +9,7 @@ require "timeout"
 WORKING_DIRECTORY = Dir.pwd
 
 # Daemons.run_proc('cointrader_runner.rb') do
-  TIMEOUT = 5*60
+  TIMEOUT = 1*60
   API_URL = 'https://poloniex.com/public?command=returnTicker&period=60'
   MIN_VOLUME = 500.0
   ACTION_LOGGER = Logger.new(WORKING_DIRECTORY + '/actions.csv')
@@ -27,39 +27,39 @@ WORKING_DIRECTORY = Dir.pwd
   end
 
   def sell(coin)
-    LOGGER.info ">> Selling #{coin}"
+    puts ">> Selling #{coin}"
     system "zenbot sell --order_adjust_time 20000  poloniex.#{coin}"
   end
   
   def exec_with_timeout(cmd, timeout)
     begin
       # stdout, stderr pipes
-      rout, wout = IO.pipe
-      rerr, werr = IO.pipe
-      stdout, stderr = nil
+      # rout, wout = IO.pipe
+      # rerr, werr = IO.pipe
+      # stdout, stderr = nil
 
-      pid = Process.spawn(cmd, pgroup: true, :out => wout, :err => werr)
+      pid = Process.spawn(cmd, pgroup: true)#, :out => wout, :err => werr)
 
       Timeout.timeout(timeout) do
         Process.waitpid(pid)
 
         # close write ends so we can read from them
-        wout.close
-        werr.close
+        # wout.close
+        # werr.close
 
-        stdout = rout.readlines.join
-        stderr = rerr.readlines.join
+        # stdout = rout.readlines.join
+        # stderr = rerr.readlines.join
       end
 
     rescue Timeout::Error
       Process.kill(-9, pid)
       Process.detach(pid)
     ensure
-      wout.close unless wout.closed?
-      werr.close unless werr.closed?
+      # wout.close unless wout.closed?
+      # werr.close unless werr.closed?
       # dispose the read ends of the pipes
-      rout.close
-      rerr.close
+      # rout.close
+      # rerr.close
     end
     stdout
    end
