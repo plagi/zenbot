@@ -42,12 +42,12 @@ first_data.each do |coin, value|
       if line.include?("end balance")
         results[pair]["end_balance"] = line.scan(/\(([^)]+)\)/).flatten
       elsif line.include?("buy hold")
-        if buy_hold = false
+        if buy_hold == false
           results[pair]["buy_hold"] = line.scan(/\(([^)]+)\)/).flatten
           buy_hold = true
         end
       elsif line.include?("vs. buy hold")
-        results[pair][vs_buy_hold] = line.split(":").last.strip
+        results[pair]["vs_buy_hold"] = line.split(":").last.strip
       end
     end
     puts results[pair]
