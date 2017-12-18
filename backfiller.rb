@@ -9,7 +9,7 @@ require "timeout"
 WORKING_DIRECTORY = Dir.pwd
 
 # Daemons.run_proc('cointrader_runner.rb') do
-  TIMEOUT = 1*60
+  TIMEOUT = 4*60*60
   API_URL = 'https://poloniex.com/public?command=returnTicker&period=60'
   MIN_VOLUME = 500.0
   ACTION_LOGGER = Logger.new(WORKING_DIRECTORY + '/actions.csv')
@@ -69,7 +69,7 @@ WORKING_DIRECTORY = Dir.pwd
 
     results = {}
     first_data = get_coin_data
-    first_data.select {|coin| coin.include?('BTC_')}.take(7).each do |coin, value|
+    first_data.select {|coin| coin.include?('BTC_')}.each do |coin, value|
       puts coin, value
       puts "value: #{value["baseVolume"]} > 500 #{calc = value["baseVolume"].to_f > MIN_VOLUME} "
       pair = rename_coin(coin)
