@@ -73,7 +73,7 @@ WORKING_DIRECTORY = Dir.pwd
       end
     rescue Timeout::Error
       puts ">> Timeout trading #{coin}"
-      system "killall node zenbot"
+      system "pkill -f binance"
     ensure
       sell(coin)
     end
