@@ -9,7 +9,7 @@ require "timeout"
 WORKING_DIRECTORY = Dir.pwd
 
 # Daemons.run_proc('cointrader_runner.rb') do
-  TIMEOUT = 4*60*60
+  TIMEOUT = 5*60*60
   API_URL = 'https://poloniex.com/public?command=returnTicker&period=60'
   MIN_VOLUME = 1000.0
   ACTION_LOGGER = Logger.new(WORKING_DIRECTORY + '/actions.csv')
@@ -107,6 +107,7 @@ WORKING_DIRECTORY = Dir.pwd
       end
     rescue Timeout::Error 
       puts ">> Timeout trading #{coin}"   
+      system "killall node zenbot"
     ensure
       sell(coin)
     end
