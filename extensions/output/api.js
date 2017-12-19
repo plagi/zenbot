@@ -18,7 +18,7 @@ module.exports = function container (get) {
   }
 
   let objectWithoutKey = (object, key) => {
-    const {[key]: deletedKey, ...otherKeys} = object;
+    const {[key]: deletedKey, otherKeys} = object;
     return otherKeys;
   }
 

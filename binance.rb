@@ -10,72 +10,39 @@ WORKING_DIRECTORY = Dir.pwd
 
 # Daemons.run_proc('cointrader_runner.rb') do
   TIMEOUT = 5*60*60
-  API_URL = 'https://poloniex.com/public?command=returnTicker&period=60'
+  API_URL = 'https://api.binance.com/api/v3/ticker/bookTicker'
   MIN_VOLUME = 1000.0
   ACTION_LOGGER = Logger.new(WORKING_DIRECTORY + '/actions.csv')
 
   def get_coin_data
-    response = HTTParty.get(API_URL)
+    response = HTTParty.get(API_URL,:verify => false)
     coindata = response.parsed_response
   end
 
   def rename_coin(coin, pair = 'BTC')
-    if coin.include?('BTC_')
-      coin_name = coin.split("_").last
+    if coin.end_with?(pair)
+      coin_name = coin.split(pair).first
       pair_name = "#{coin_name}-#{pair}"
     end
   end
 
   def sell(coin)
     puts ">> Selling #{coin}"
-    system "zenbot sell --order_adjust_time 20000  poloniex.#{coin}"
+    system "zenbot sell --order_adjust_time 20000  binance.#{coin}"
   end
-  
-  def exec_with_timeout(cmd, timeout)
-    begin
-      # stdout, stderr pipes
-      # rout, wout = IO.pipe
-      # rerr, werr = IO.pipe
-      # stdout, stderr = nil
-
-      pid = Process.spawn(cmd, pgroup: true)#, :out => wout, :err => werr)
-
-      Timeout.timeout(timeout) do
-        # Process.waitpid(pid)
-
-        # close write ends so we can read from them
-        # wout.close
-        # werr.close
-
-        # stdout = rout.readlines.join
-        # stderr = rerr.readlines.join
-      end
-
-    rescue Timeout::Error
-      Process.kill(-9, pid)
-      Process.detach(pid)
-    ensure
-      # wout.close unless wout.closed?
-      # werr.close unless werr.closed?
-      # dispose the read ends of the pipes
-      # rout.close
-      # rerr.close
-    end
-    # stdout
-   end
   
   loop do
     system "rm ./simulations/*.html"
 
     results = {}
     first_data = get_coin_data
-    first_data.select {|coin| coin.include?('BTC_')}.each do |coin, value|
-      puts coin, value
-      puts "value: #{value["baseVolume"]} > 500 #{calc = value["baseVolume"].to_f > MIN_VOLUME} "
-      pair = rename_coin(coin)
+    first_data.select {|coin| coin['symbol'].end_with?('BTC')}.each do |coin|
+      pair = rename_coin(coin['symbol'])
+      puts pair
+      puts "value: #{coin["bidQty"]} > 500 #{calc = coin["bidQty"].to_f > MIN_VOLUME} "
       if calc
-        system "zenbot backfill  poloniex.#{pair} --days 2"
-        result = %x[zenbot sim poloniex.#{pair} --days 1 --max_sell_loss_pct=25]
+        system "zenbot backfill  binance.#{pair} --days 2"
+        result = %x[zenbot sim binance.#{pair} --days 1 --max_sell_loss_pct=25]
         file = result.split("\n").last.split(" ").last
         results[pair] = {}
         buy_hold = false
@@ -102,10 +69,10 @@ WORKING_DIRECTORY = Dir.pwd
     coin = winner.first
     begin
       Timeout.timeout(TIMEOUT) do
-          system "zenbot trade poloniex.#{coin}"
+          system "zenbot trade binance.#{coin}"
       end
-    rescue Timeout::Error 
-      puts ">> Timeout trading #{coin}"   
+    rescue Timeout::Error
+      puts ">> Timeout trading #{coin}"
       system "killall node zenbot"
     ensure
       sell(coin)
