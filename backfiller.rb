@@ -98,7 +98,7 @@ WORKING_DIRECTORY = Dir.pwd
     end
   
     puts results
-    puts "WINNER: #{winner = results.sort {|a,b| a.last["buy_hold%"].to_f <=> b.last["buy_hold%"].to_f}.first}"
+    puts "WINNER: #{winner = results.sort {|a,b| b.last["vs_buy_hold%"].to_f <=> a.last["vs_buy_hold%"].to_f}.first}"
     ACTION_LOGGER.debug results.to_s
     coin = winner.first
     begin
