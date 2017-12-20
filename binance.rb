@@ -64,7 +64,8 @@ WORKING_DIRECTORY = Dir.pwd
           end
           puts results[pair]
         end
-      rescue 
+      rescue Exception => e
+        puts "Error in coin #{pair}: #{e.inspect}"
       end
     end
   

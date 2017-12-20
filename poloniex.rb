@@ -42,27 +42,32 @@ WORKING_DIRECTORY = Dir.pwd
       puts coin, value
       puts "value: #{value["baseVolume"]} > 500 #{calc = value["baseVolume"].to_f > MIN_VOLUME} "
       pair = rename_coin(coin, TARGET_COIN)
-      if calc
-        system "zenbot backfill  poloniex.#{pair} --days 2"
-        result = %x[zenbot sim poloniex.#{pair} --days 1 --max_sell_loss_pct=25]
-        file = result.split("\n").last.split(" ").last
-        results[pair] = {}
-        buy_hold = false
-        File.open(file).each do |line|
-          if line.include?("end balance")
-            results[pair]["end_balance"] = line.split(" ")[2].to_f
-            results[pair]["end_balance%"] = line.scan(/\(([^)]+)\)/).flatten.first.to_f
-          elsif line.include?("buy hold")
-            if buy_hold == false
-              results[pair]["buy_hold"] = line.split(" ")[2].to_f
-              results[pair]["buy_hold%"] = line.scan(/\(([^)]+)\)/).flatten.first.to_f
-              results[pair]["vs_buy_hold%"] = (1 -  results[pair]["buy_hold"].to_f / results[pair]["end_balance"].to_f)*100.0
-              buy_hold = true
+      begin
+        if calc
+          system "zenbot backfill  poloniex.#{pair} --days 2"
+          result = %x[zenbot sim poloniex.#{pair} --days 1 --max_sell_loss_pct=25]
+          file = result.split("\n").last.split(" ").last
+          results[pair] = {}
+          buy_hold = false
+          File.open(file).each do |line|
+            if line.include?("end balance")
+              results[pair]["end_balance"] = line.split(" ")[2].to_f
+              results[pair]["end_balance%"] = line.scan(/\(([^)]+)\)/).flatten.first.to_f
+            elsif line.include?("buy hold")
+              if buy_hold == false
+                results[pair]["buy_hold"] = line.split(" ")[2].to_f
+                results[pair]["buy_hold%"] = line.scan(/\(([^)]+)\)/).flatten.first.to_f
+                results[pair]["vs_buy_hold%"] = (1 -  results[pair]["buy_hold"].to_f / results[pair]["end_balance"].to_f)*100.0
+                buy_hold = true
+              end
             end
           end
+          puts results[pair]
         end
-        puts results[pair]
+      rescue Exception => e
+        puts "Error in coin #{pair}: #{e.inspect}"
       end
+        
     end
   
     puts results
