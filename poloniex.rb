@@ -9,7 +9,7 @@ require "timeout"
 WORKING_DIRECTORY = Dir.pwd
 
 # Daemons.run_proc('cointrader_runner.rb') do
-  TIMEOUT = 5*60*60
+  TIMEOUT = 2*60*60
   API_URL = 'https://poloniex.com/public?command=returnTicker&period=60'
   MIN_VOLUME = 500
   ACTION_LOGGER = Logger.new(WORKING_DIRECTORY + '/actions.csv')
@@ -45,7 +45,7 @@ WORKING_DIRECTORY = Dir.pwd
       begin
         if calc
           system "zenbot backfill  poloniex.#{pair} --days 2"
-          result = %x[zenbot sim poloniex.#{pair} --days 1 --max_sell_loss_pct=25]
+          result = %x[zenbot sim poloniex.#{pair} --days=1 --max_sell_loss_pct=25]
           file = result.split("\n").last.split(" ").last
           results[pair] = {}
           buy_hold = false
@@ -71,7 +71,7 @@ WORKING_DIRECTORY = Dir.pwd
     end
   
     puts results
-    puts "WINNER: #{winner = results.sort {|a,b| b.last["vs_buy_hold%"].to_f <=> a.last["vs_buy_hold%"].to_f}.first}"
+    puts "WINNER: #{winner = results.sort {|a,b| b.last["end_balance"].to_f <=> a.last["end_balance"].to_f}.first}"
     ACTION_LOGGER.debug results.to_s
     coin = winner.first
     begin
