@@ -102,7 +102,7 @@ WORKING_DIRECTORY = Dir.pwd
     coin = winner.first
     begin
       Timeout.timeout(TIMEOUT) do
-          system "zenbot trade poloniex.#{coin}"
+          system "zenbot trade poloniex.#{coin} --paper"
       end
     rescue Timeout::Error 
       puts ">> Timeout trading #{coin}"   
