@@ -10,10 +10,10 @@ WORKING_DIRECTORY = Dir.pwd
 
 # Daemons.run_proc('cointrader_runner.rb') do
   TIMEOUT = 5*60*60
-  API_URL = 'https://api.binance.com/api/v3/ticker/bookTicker'
-  MIN_VOLUME = 0
+  API_URL = 'https://api.binance.com/api/v1/ticker/24hr'
+  MIN_VOLUME = 500
   ACTION_LOGGER = Logger.new(WORKING_DIRECTORY + '/actions.csv')
-  TARGET_COIN = "USDT"
+  TARGET_COIN = "BTC"
   
   def get_coin_data
     response = HTTParty.get(API_URL,:verify => false)
@@ -40,7 +40,7 @@ WORKING_DIRECTORY = Dir.pwd
     first_data.select {|coin| coin['symbol'].end_with?(TARGET_COIN )}.each do |coin|
       pair = rename_coin(coin['symbol'], TARGET_COIN )
       puts pair
-      puts "value: #{coin["bidQty"]} > 500 #{calc = coin["bidQty"].to_f > MIN_VOLUME} "
+      puts "value: #{coin["quoteVolume"]} > 500 #{calc = coin["quoteVolume"].to_f > MIN_VOLUME} "
       begin
         if calc
           system "zenbot backfill  binance.#{pair} --days 2"
