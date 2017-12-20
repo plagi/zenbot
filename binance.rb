@@ -60,9 +60,9 @@ WORKING_DIRECTORY = Dir.pwd
               end
             end
           end
-        rescue
+          puts results[pair]
         end
-        puts results[pair]
+      rescue 
       end
     end
   
