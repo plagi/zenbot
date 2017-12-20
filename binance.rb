@@ -40,24 +40,27 @@ WORKING_DIRECTORY = Dir.pwd
       pair = rename_coin(coin['symbol'])
       puts pair
       puts "value: #{coin["bidQty"]} > 500 #{calc = coin["bidQty"].to_f > MIN_VOLUME} "
-      if calc
-        system "zenbot backfill  binance.#{pair} --days 2"
-        result = %x[zenbot sim binance.#{pair} --days 1 --max_sell_loss_pct=25]
-        file = result.split("\n").last.split(" ").last
-        results[pair] = {}
-        buy_hold = false
-        File.open(file).each do |line|
-          if line.include?("end balance")
-            results[pair]["end_balance"] = line.split(" ")[2].to_f
-            results[pair]["end_balance%"] = line.scan(/\(([^)]+)\)/).flatten.first.to_f
-          elsif line.include?("buy hold")
-            if buy_hold == false
-              results[pair]["buy_hold"] = line.split(" ")[2].to_f
-              results[pair]["buy_hold%"] = line.scan(/\(([^)]+)\)/).flatten.first.to_f
-              results[pair]["vs_buy_hold%"] = (1 -  results[pair]["buy_hold"].to_f / results[pair]["end_balance"].to_f)*100.0
-              buy_hold = true
+      begin
+        if calc
+          system "zenbot backfill  binance.#{pair} --days 2"
+          result = %x[zenbot sim binance.#{pair} --days 1 --max_sell_loss_pct=25]
+          file = result.split("\n").last.split(" ").last
+          results[pair] = {}
+          buy_hold = false
+          File.open(file).each do |line|
+            if line.include?("end balance")
+              results[pair]["end_balance"] = line.split(" ")[2].to_f
+              results[pair]["end_balance%"] = line.scan(/\(([^)]+)\)/).flatten.first.to_f
+            elsif line.include?("buy hold")
+              if buy_hold == false
+                results[pair]["buy_hold"] = line.split(" ")[2].to_f
+                results[pair]["buy_hold%"] = line.scan(/\(([^)]+)\)/).flatten.first.to_f
+                results[pair]["vs_buy_hold%"] = (1 -  results[pair]["buy_hold"].to_f / results[pair]["end_balance"].to_f)*100.0
+                buy_hold = true
+              end
             end
           end
+        rescue
         end
         puts results[pair]
       end
