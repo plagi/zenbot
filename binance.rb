@@ -11,9 +11,10 @@ WORKING_DIRECTORY = Dir.pwd
 # Daemons.run_proc('cointrader_runner.rb') do
   TIMEOUT = 5*60*60
   API_URL = 'https://api.binance.com/api/v3/ticker/bookTicker'
-  MIN_VOLUME = 1000.0
+  MIN_VOLUME = 0
   ACTION_LOGGER = Logger.new(WORKING_DIRECTORY + '/actions.csv')
-
+  TARGET_COIN = "USDT"
+  
   def get_coin_data
     response = HTTParty.get(API_URL,:verify => false)
     coindata = response.parsed_response
@@ -32,12 +33,12 @@ WORKING_DIRECTORY = Dir.pwd
   end
   
   loop do
-    system "rm ./simulations/*.html"
+    # system "rm ./simulations/*.html"
 
     results = {}
     first_data = get_coin_data
-    first_data.select {|coin| coin['symbol'].end_with?('BTC')}.each do |coin|
-      pair = rename_coin(coin['symbol'])
+    first_data.select {|coin| coin['symbol'].end_with?(TARGET_COIN )}.each do |coin|
+      pair = rename_coin(coin['symbol'], TARGET_COIN )
       puts pair
       puts "value: #{coin["bidQty"]} > 500 #{calc = coin["bidQty"].to_f > MIN_VOLUME} "
       begin

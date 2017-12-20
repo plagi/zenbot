@@ -11,16 +11,17 @@ WORKING_DIRECTORY = Dir.pwd
 # Daemons.run_proc('cointrader_runner.rb') do
   TIMEOUT = 5*60*60
   API_URL = 'https://poloniex.com/public?command=returnTicker&period=60'
-  MIN_VOLUME = 1000.0
+  MIN_VOLUME = 0
   ACTION_LOGGER = Logger.new(WORKING_DIRECTORY + '/actions.csv')
-
+  TARGET_COIN = "USDT"
+  
   def get_coin_data
     response = HTTParty.get(API_URL)
     coindata = response.parsed_response
   end
 
   def rename_coin(coin, pair = 'BTC')
-    if coin.include?('BTC_')
+    if coin.include?("#{pair}_")
       coin_name = coin.split("_").last
       pair_name = "#{coin_name}-#{pair}"
     end
@@ -32,14 +33,14 @@ WORKING_DIRECTORY = Dir.pwd
   end
   
   loop do
-    # system "rm ./simulations/*.html"
+    # system "rm ./simulations/*.html"]}
 
     results = {}
     first_data = get_coin_data
-    first_data.select {|coin| coin.include?('BTC_')}.each do |coin, value|
+    first_data.select {|coin| coin.include?("#{TARGET_COIN}_")}.each do |coin, value|
       puts coin, value
       puts "value: #{value["baseVolume"]} > 500 #{calc = value["baseVolume"].to_f > MIN_VOLUME} "
-      pair = rename_coin(coin)
+      pair = rename_coin(coin, TARGET_COIN)
       if calc
         system "zenbot backfill  poloniex.#{pair} --days 2"
         result = %x[zenbot sim poloniex.#{pair} --days 1 --max_sell_loss_pct=25]
