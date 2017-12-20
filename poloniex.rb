@@ -14,6 +14,7 @@ WORKING_DIRECTORY = Dir.pwd
   MIN_VOLUME = 500
   ACTION_LOGGER = Logger.new(WORKING_DIRECTORY + '/actions.csv')
   TARGET_COIN = "BTC"
+  PAPER = ''#'--paper'
   
   def get_coin_data
     response = HTTParty.get(API_URL)
@@ -70,7 +71,7 @@ WORKING_DIRECTORY = Dir.pwd
     coin = winner.first
     begin
       Timeout.timeout(TIMEOUT) do
-          system "zenbot trade poloniex.#{coin} --paper"
+          system "zenbot trade poloniex.#{coin} #{PAPER}"
       end
     rescue Timeout::Error 
       puts ">> Timeout trading #{coin}"   
