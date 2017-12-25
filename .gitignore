@@ -27,3 +27,4 @@ models/*.html
 *.swp
 temp.html
 logs
+.sync
